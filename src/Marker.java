@@ -79,8 +79,62 @@ public class Marker {
      * can have the same hash.
      * Example: a = "ACGTAC", b = "TTACGT", k = 4: the words of a are ACGT, CGTA, GTAC; only ACGT is in b, so the answer is 1.
      */
+
     public static int sharedWords(String a, String b, int k) {
-        // TODO Mission 4
-        return -1;
+        if (k <= 0 || a.length() < k || b.length() < k) {
+            return 0;
+        }
+
+        long base = 257;
+        long mod = 1000000007;
+
+        long power = 1;
+        for (int i = 1; i < k; i++) {
+            power = (power * base) % mod;
+        }
+
+        HashMap<Long, ArrayList<Integer>> hashes = new HashMap<>();
+
+        long hashB = 0;
+        for (int i = 0; i < k; i++) {
+            hashB = (hashB * base + b.charAt(i)) % mod;
+        }
+
+        for (int i = 0; i <= b.length() - k; i++) {
+            if (i > 0) {
+                hashB = (hashB - b.charAt(i - 1) * power % mod + mod) % mod;
+                hashB = (hashB * base + b.charAt(i + k - 1)) % mod;
+            }
+
+            hashes.computeIfAbsent(hashB, x -> new ArrayList<>()).add(i);
+        }
+
+        long hashA = 0;
+        for (int i = 0; i < k; i++) {
+            hashA = (hashA * base + a.charAt(i)) % mod;
+        }
+
+        int count = 0;
+
+        for (int i = 0; i <= a.length() - k; i++) {
+            if (i > 0) {
+                hashA = (hashA - a.charAt(i - 1) * power % mod + mod) % mod;
+                hashA = (hashA * base + a.charAt(i + k - 1)) % mod;
+            }
+
+            ArrayList<Integer> positions = hashes.get(hashA);
+
+            if (positions != null) {
+                for (int pos : positions) {
+                    if (a.regionMatches(i, b, pos, k)) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return count;
     }
+
 }
